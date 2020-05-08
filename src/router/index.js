@@ -6,7 +6,7 @@ import Login from '../views/login.vue'
 import Success from '../views/success.vue'
 import Register from '../views/register.vue'
 import Main from '../views/main.vue'
-
+import Admin from '../views/admin.vue'
 
 Vue.use(VueRouter)
 
@@ -15,6 +15,11 @@ const routes = [
     path: '/',
     name: 'login',
     component: Login
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: Admin
   },
   {
     path: '/main',

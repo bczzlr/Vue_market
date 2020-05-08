@@ -58,6 +58,11 @@
                 <el-form-item label="商品名称" prop="comName">
                     <el-input v-model="commodityForm.comName"></el-input>
                 </el-form-item>
+                <!-- maxlength="8" oninput = "value=value.replace(/[^\d.]/g,'')" -->
+                <!-- 目前只能输入整数 -->
+                <!-- <el-form-item label="商品的价格" prop="comPrice" type="number">
+                    <el-input  v-model.number="commodityForm.comPrice"></el-input>
+                </el-form-item> -->
                 <el-form-item label="商品的价格" prop="comPrice" type="number">
                     <el-input v-model.number="commodityForm.comPrice"></el-input>
                 </el-form-item>
@@ -85,17 +90,10 @@
         <el-dialog title="选择订单交易详细信息" :visible.sync="changeFromVisible">
             <el-form :model="changeCommodityForm" label-width="100px" class="demo-ruleForm" :rules="changeRules"
                 ref="changeCommodityForm">
-                <el-form-item label="商品名称" prop="comName">
+                <el-form-item label="商品交易地点" prop="comName">
                     <el-input v-model="commodityForm.comName"></el-input>
                 </el-form-item>
-                <el-form-item label="商品的价格" prop="comPrice" type="number">
-                    <el-input v-model.number="commodityForm.comPrice"></el-input>
-                </el-form-item>
-                <el-form-item label="商品的描述" prop="comDescribe">
-                    <el-input v-model="commodityForm.comDescribe"></el-input>
-                </el-form-item>
-
-                <el-form-item label="发布时间" prop="comReleaseTime">
+                <el-form-item label="商品交易时间" prop="comReleaseTime">
                     <div class="block">
                         <el-date-picker v-model="commodityForm.comReleaseTime" type="datetime" placeholder="选择日期时间"
                             align="right" :picker-options="pickerOptions" format="yyyy-MM-dd HH:mm:ss"
@@ -146,7 +144,8 @@
                     </el-table-column>
                     <el-table-column prop="comStatus" label="商品状态">
                     </el-table-column>
-                    <el-table-column label="进行操作" :prop="comID">
+                    <!-- :prop="comID" -->
+                    <el-table-column label="进行操作">
                         <template slot-scope="scope">
                             <el-button type="success" @click="buyCommodity(scope.row.comID)">点击购买</el-button>
                         </template>
@@ -179,7 +178,9 @@
             return {
 
                 //对话框可视数据
+                //添加商品对话框是否可见
                 dialogFormVisible: false,
+                //下订单对话框是否可见
                 changeFromVisible: false,
 
                 tableData: Array(20).fill(item),
@@ -342,47 +343,51 @@
                 console.log(this.commodityForm)
 
                 this.$refs[formName].validate((valid) => {
-                    // if (valid) {
-                    alert('submit!');
-                    //序列化json
-                    var sendJson = JSON.stringify(this.commodityForm);
-                    var senduser = JSON.stringify(this.msg)
+                    if (valid) {
+                        alert('submit!');
+                        //序列化json
+                        var sendJson = JSON.stringify(this.commodityForm);
+                        var senduser = JSON.stringify(this.msg)
 
 
-                    axios({
-                        //发送http请求
-                        method: 'post',
-                        url: 'http://localhost:9090/commodity/addcommodity',
-                        crossDomain: true,
-                        //以map形式发送
-                        data: {
-                            "com": sendJson,
-                            "user": senduser
-                        }
+                        axios({
+                            //发送http请求
+                            method: 'post',
+                            url: 'http://localhost:9090/commodity/addcommodity',
+                            crossDomain: true,
+                            //以map形式发送
+                            data: {
+                                "com": sendJson,
+                                "user": senduser
+                            }
 
-                        ,
-                        headers: {
-                            'Content-Type': 'application/json;charset=UTF-8'
-                        }
-                    }).then(response => {
-                        // //对返回数据进行处理
-                        // console.log(response)
-                        // let res_data = response.data
-                        // console.log(res_data)
-                        // if (res_data.id == -1) {
-                        //     alert("用户名已存在，请重新起名")
-                        // } else {
-                        //     alert("注册成功，您的用户id为：" + res_data.id)
+                            ,
+                            headers: {
+                                'Content-Type': 'application/json;charset=UTF-8'
+                            }
+                        }).then(response => {
+                            // //对返回数据进行处理
+                            // console.log(response)
+                            // let res_data = response.data
+                            // console.log(res_data)
+                            // if (res_data.id == -1) {
+                            //     alert("用户名已存在，请重新起名")
+                            // } else {
+                            //     alert("注册成功，您的用户id为：" + res_data.id)
 
-                        //     this.$router.push({
-                        //         path: "/success",
-                        //         query: {
-                        //             data: res_data
-                        //         }
-                        //     })
-                        // }
+                            //     this.$router.push({
+                            //         path: "/success",
+                            //         query: {
+                            //             data: res_data
+                            //         }
+                            //     })
+                            // }
 
-                    })
+                        })
+                        this.dialogFormVisible = false
+                    } else {
+                        alert("请注意输入")
+                    }
                     // } else {
                     //     console.log('error submit!!');
                     //     return false;

@@ -27,6 +27,9 @@
         <el-form-item style="margin-bottom: 60px">
           <el-button style="width: 100%" type="primary" :loading="loading" @click.native.prevent="handleLogin">登录
           </el-button>
+          <el-button style="width: 100%" type="success" :loading="loading" @click.native.prevent="handleAdminLogin">
+            管理员登录
+          </el-button>
           <div style="text-align:right">
             <el-button type="text" @click="toRegisterPage">点击注册</el-button>
           </div>
@@ -60,6 +63,58 @@
         }
       },
 
+      //管理员登录
+      handleAdminLogin() {
+        var self = this;
+
+        var sendData = {};
+        // var Husername = this.username;
+        // //var Hpassword = this.password;
+        sendData.username = this.loginForm.username
+        sendData.password = this.loginForm.password
+        // sendData.names=Husername
+        var sendJson = JSON.stringify(sendData);
+
+        axios({
+          //发送http请求
+          method: 'post',
+          url: 'http://localhost:9090/admin/login',
+          crossDomain: true,
+          data: sendJson,
+          headers: {
+            'Content-Type': 'application/json;charset=UTF-8'
+          }
+        }).then(response => {
+          //  var jsonData = JSON.stringify(response.data, null, 4);
+          //  this.result = jsonData;
+          var length = Object.keys(response.data)
+          console.log(response)
+          let err_message = response.data.err_message;
+          console.log(err_message)
+
+          if (length == 0) {
+            alert("用户名密码有误")
+          }
+
+          //未出现错误信息
+          // if (typeof (err_message) == "undefined")
+          else {
+            alert("欢迎管理员")
+            this.$router.push({
+              path: "/admin",
+              query: {
+                data: response.data
+              }
+            })
+          }
+
+        }).catch(() => {
+          alert("errer")
+        })
+
+
+      },
+
       //跳转登录页面
       toRegisterPage() {
         this.$router.push({
@@ -67,6 +122,8 @@
 
         })
       },
+
+      //用户登录
       handleLogin() {
         var self = this;
 
@@ -97,6 +154,8 @@
           if (err_message == "用户名密码错误") {
             alert("用户名密码有误")
           }
+
+          //未出现错误信息
           if (typeof (err_message) == "undefined") {
             alert(response.data.telephonenum)
             this.$router.push({
