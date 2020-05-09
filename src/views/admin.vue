@@ -76,6 +76,13 @@
 
 <script>
     export default {
+
+        //保存用户信息
+        state: {
+            user: {},
+            token: false
+        },
+
         data() {
             const item = {
                 date: '2016-05-02',
@@ -84,8 +91,11 @@
             };
 
             return {
+
                 tableData: Array(20).fill(item),
                 msg: this.$route.query.data,
+                
+                //用户渲染商品列表的数据
                 commodities: [{
                     id: "",
                     name: "",
@@ -95,6 +105,8 @@
                     status: ""
 
                 }],
+
+
             }
         },
         created() {
@@ -115,7 +127,7 @@
                 // var Husername = this.username;
                 // //var Hpassword = this.password;
                 _data.comID = commodity.comID
-                
+
                 //sendData.password = this.loginForm.password
                 var sendjson = JSON.stringify(_data)
                 axios({
@@ -135,6 +147,7 @@
 
                 })
                 alert("修改成功")
+                location.reload();
             }
         }
     };

@@ -44,6 +44,15 @@
 <script>
   export default {
     name: "login",
+
+    //重定向注入
+    provide() {
+      return {
+        reload: this.reload
+      }
+    },
+
+
     data() {
       return {
         loginForm: {
@@ -121,6 +130,14 @@
           path: "/register",
 
         })
+      },
+
+      //重新加载方法
+      reload () {
+      this.isRouterAlive = false
+      this.$nextTick(function () {
+        this.isRouterAlive = true
+      })
       },
 
       //用户登录

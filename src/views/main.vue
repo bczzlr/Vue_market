@@ -87,15 +87,16 @@
         </el-dialog>
 
         <!-- 下订单对话框 -->
+        <!-- 需要输入正确交易时间和地点 -->
         <el-dialog title="选择订单交易详细信息" :visible.sync="changeFromVisible">
-            <el-form :model="changeCommodityForm" label-width="100px" class="demo-ruleForm" :rules="changeRules"
+            <el-form :model="dealForm" label-width="100px" class="demo-ruleForm" :rules="changeRules"
                 ref="changeCommodityForm">
                 <el-form-item label="商品交易地点" prop="comName">
-                    <el-input v-model="commodityForm.comName"></el-input>
+                    <el-input v-model="dealForm.dealLocation"></el-input>
                 </el-form-item>
                 <el-form-item label="商品交易时间" prop="comReleaseTime">
                     <div class="block">
-                        <el-date-picker v-model="commodityForm.comReleaseTime" type="datetime" placeholder="选择日期时间"
+                        <el-date-picker v-model="dealForm.dealChangeTime" type="datetime" placeholder="选择日期时间"
                             align="right" :picker-options="pickerOptions" format="yyyy-MM-dd HH:mm:ss"
                             value-format="yyyy-MM-dd HH:mm:ss">
                         </el-date-picker>
@@ -103,7 +104,7 @@
                 </el-form-item>
 
                 <el-form-item>
-                    <el-button type="primary" @click="submitForm('commodityForm')">立即创建</el-button>
+                    <el-button type="primary" @click="buyCommodity('commodityForm')">立即创建</el-button>
                     <el-button @click="resetForm('commodityForm')">重置</el-button>
                 </el-form-item>
             </el-form>
@@ -126,7 +127,7 @@
                         <el-dropdown-item>删除</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
-                <span>王小虎</span>
+                <span>{{msg.username}}</span>
             </el-header>
 
             <!-- 商品浏览主页 -->
@@ -267,6 +268,15 @@
 
                 },
 
+                //订单元素表单
+                dealForm: {
+                    //地点
+                    dealLocation:"",
+                    //交易时间
+                    dealChangeTime:"",
+
+                },
+
                 //下订单表单
                 changeCommodityForm: {
 
@@ -384,7 +394,11 @@
                             // }
 
                         })
+
+                        //刷新
+                        location.reload();
                         this.dialogFormVisible = false
+
                     } else {
                         alert("请注意输入")
                     }
