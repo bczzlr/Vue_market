@@ -89,12 +89,15 @@
         <!-- 下订单对话框 -->
         <!-- 需要输入正确交易时间和地点 -->
         <el-dialog title="选择订单交易详细信息" :visible.sync="changeFromVisible">
-            <el-form :model="dealForm" label-width="100px" class="demo-ruleForm" :rules="changeRules"
-                ref="changeCommodityForm">
-                <el-form-item label="商品交易地点" prop="comName">
+            <el-form :model="dealForm" label-width="100px" class="demo-ruleForm" :rules="dealRules"
+                ref="dealForm">
+                <el-form-item label="购买人联系电话" >
+                    <el-input v-model.number="dealForm.dealBuyerTelephone" prop="dealBuyerTelephone" type="number"></el-input>
+                </el-form-item>
+                <el-form-item label="商品交易地点" prop="dealLocation">
                     <el-input v-model="dealForm.dealLocation"></el-input>
                 </el-form-item>
-                <el-form-item label="商品交易时间" prop="comReleaseTime">
+                <el-form-item label="商品交易时间" prop="dealChangeTime">
                     <div class="block">
                         <el-date-picker v-model="dealForm.dealChangeTime" type="datetime" placeholder="选择日期时间"
                             align="right" :picker-options="pickerOptions" format="yyyy-MM-dd HH:mm:ss"
@@ -104,8 +107,8 @@
                 </el-form-item>
 
                 <el-form-item>
-                    <el-button type="primary" @click="buyCommodity('commodityForm')">立即创建</el-button>
-                    <el-button @click="resetForm('commodityForm')">重置</el-button>
+                    <el-button type="primary" @click="buyCommodity('dealForm')">立即创建</el-button>
+                    <el-button @click="resetForm('dealForm')">重置</el-button>
                 </el-form-item>
             </el-form>
         </el-dialog>
@@ -148,7 +151,8 @@
                     <!-- :prop="comID" -->
                     <el-table-column label="进行操作">
                         <template slot-scope="scope">
-                            <el-button type="success" @click="buyCommodity(scope.row.comID)">点击购买</el-button>
+                            <!-- 传入商品id -->
+                            <el-button type="success" @click="buyCommodityDiaOpen(scope.row.comID)">点击购买</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -188,6 +192,10 @@
 
                 //路由传递数据
                 msg: this.$route.query.data,
+
+                //购买订单时选中商品id
+                onClickCommodity:'',
+
                 item: {
                     date: '2016-05-02',
                     name: '王虎',
@@ -198,7 +206,9 @@
                 //     name: "fadfa",
                 //     price: 12.32
                 // }, ],
+                
                 //商品列表
+                //渲染table用
                 commodities: [{
                     id: "",
                     name: "",
@@ -255,7 +265,36 @@
                 },
 
                 //交易对话框规则
-                changeRules: {
+                dealRules: {
+                    dealBuyerTelephone: [{
+                            required: true,
+                            message: '手机号码不能为空'
+                        },
+                        {
+                            type: 'number',
+                            message: '手机号码必须为数字值'
+                        },
+
+                        
+                    ],
+                    dealChangeTime: [{
+                        // type: 'date',
+                        required: true,
+                        message: '请选择交易时间',
+                        trigger: 'change'
+                    }],
+                    dealLocation: [{
+                            required: true,
+                            message: '请约定交易地点',
+                            trigger: 'blur'
+                        },
+                        {
+                            min: 1,
+                            max: 10,
+                            message: '长度在 1 到 10 个字符',
+                            trigger: 'blur'
+                        }
+                    ],
 
                 },
 
@@ -274,13 +313,15 @@
                     dealLocation:"",
                     //交易时间
                     dealChangeTime:"",
+                    //联系人电话
+                    dealBuyerTelephone:""
 
                 },
 
-                //下订单表单
-                changeCommodityForm: {
+                // //下订单表单
+                // changeCommodityForm: {
 
-                },
+                // },
 
                 //时间选择器
                 pickerOptions: {
@@ -332,9 +373,16 @@
                 this.dialogFormVisible = true
             },
 
+
+
             //打开交易商品对话框
-            buyCommodity(id) {
-                console.log(id)
+            buyCommodityDiaOpen(id) {
+
+                
+                this.onClickCommodity = id;
+                console.log("选中id信息")
+                console.log(this.onClickCommodity)
+
                 this.changeFromVisible = true
             },
 
@@ -348,12 +396,66 @@
                 }
             },
 
+            //购买商品方法
+            //传参失效待解决，换了中方法
+            buyCommodity(form){
+                //console.log(this.dealForm)
+                //console.log(dealform)
+                this.$refs[form].validate((valid) => {
+                    if(valid){//验证通过
+                        
+                        let com = {}
+                        com.comID = this.onClickCommodity
+
+
+                        //此处以后会更改，发送多个json浪费资源，用requestparam代替
+                        var sendDeal = JSON.stringify(this.dealForm)
+                        var sendUser = JSON.stringify(this.msg) 
+                        var sendCom = JSON.stringify(com)
+
+                        //跨域请求
+                        axios({
+                            //发送http请求
+                            method: 'post',
+                            url: 'http://localhost:9090/deal/makedeal',
+                            crossDomain: true,
+                            //以map形式发送
+                            //以map形式发送数据太浪费资源，以后改成一个商品json在请求体和一个userid在url中
+                            data: {
+                                "com": sendCom,
+                                "user": sendUser,
+                                "deal":sendDeal
+                            }
+
+                            ,
+                            headers: {
+                                'Content-Type': 'application/json;charset=UTF-8'
+                            }
+                        }).then(response => {
+                           
+                                var length = Object.keys(response.data)
+                                if(length == 0){
+                                    alert("订单失效")
+                                }
+                                else{
+                                    alert("购买成功")
+                                }
+                        })
+
+                    }
+                    else("请注意对话提示框")
+                })
+            },
+
             //提交创建
+
             submitForm(formName) {
                 console.log(this.commodityForm)
 
+                //验证通过后发送http请求
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
+                        //验证通过
                         alert('submit!');
                         //序列化json
                         var sendJson = JSON.stringify(this.commodityForm);
@@ -366,6 +468,7 @@
                             url: 'http://localhost:9090/commodity/addcommodity',
                             crossDomain: true,
                             //以map形式发送
+                            //以map形式发送数据太浪费资源，以后改成一个商品json在请求体和一个userid在url中
                             data: {
                                 "com": sendJson,
                                 "user": senduser
