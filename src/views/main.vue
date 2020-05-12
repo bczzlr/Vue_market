@@ -18,38 +18,93 @@
                         <el-menu-item index="1-4-1">选项4-1</el-menu-item>
                     </el-submenu> -->
                 </el-submenu>
-                <el <el-submenu index="2">
+                <el-submenu index="2">
                     <template slot="title"><i class="el-icon-menu"></i>我的功能</template>
                     <el-menu-item-group>
 
                         <el-menu-item index="2-1" @click="release_com">发布商品</el-menu-item>
-                        <el-menu-item index="2-2">选项2</el-menu-item>
+                    </el-menu-item-group>
+                    <el-menu-item-group title="正在进行中的交易">
+
+                        <el-menu-item index="2-2" @click="view_my_commodity">查看我的发布</el-menu-item>
+
+                        <el-menu-item index="2-2" @click="view_my_bought">查看我的购买</el-menu-item>
+
+                        <el-menu-item index="2-2" @click="">查看我的评价</el-menu-item>
+                    </el-menu-item-group>
+
+                </el-submenu>
+                <el-submenu index="3">
+                    <template slot="title"><i class="el-icon-setting"></i>导航三</template>
+                    <el-menu-item-group>
+                        <template slot="title">分组一</template>
+                        <el-menu-item index="3-1">选项1</el-menu-item>
+                        <el-menu-item index="3-2">选项2</el-menu-item>
                     </el-menu-item-group>
                     <el-menu-item-group title="分组2">
-                        <el-menu-item index="2-3">选项3</el-menu-item>
+                        <el-menu-item index="3-3">选项3</el-menu-item>
                     </el-menu-item-group>
-                    <el-submenu index="2-4">
+                    <el-submenu index="3-4">
                         <template slot="title">选项4</template>
-                        <el-menu-item index="2-4-1">选项4-1</el-menu-item>
+                        <el-menu-item index="3-4-1">选项4-1</el-menu-item>
                     </el-submenu>
-                    </el-submenu>
-                    <el-submenu index="3">
-                        <template slot="title"><i class="el-icon-setting"></i>导航三</template>
-                        <el-menu-item-group>
-                            <template slot="title">分组一</template>
-                            <el-menu-item index="3-1">选项1</el-menu-item>
-                            <el-menu-item index="3-2">选项2</el-menu-item>
-                        </el-menu-item-group>
-                        <el-menu-item-group title="分组2">
-                            <el-menu-item index="3-3">选项3</el-menu-item>
-                        </el-menu-item-group>
-                        <el-submenu index="3-4">
-                            <template slot="title">选项4</template>
-                            <el-menu-item index="3-4-1">选项4-1</el-menu-item>
-                        </el-submenu>
-                    </el-submenu>
+                </el-submenu>
             </el-menu>
         </el-aside>
+
+        <!-- 查看我的购买对话框 -->
+        <el-dialog title="我的购买" :visible.sync="dialogMyBoughtVisible">
+            <el-table :data="user_deal_list">
+                <el-table-column property="d_location" label="交易地点"></el-table-column>
+                <el-table-column property="d_time" label="交易时间"></el-table-column>
+                <el-table-column property="d_tele" label="买家电话"></el-table-column>
+                <el-table-column property="c_prive" label="交易金额"></el-table-column>
+                <el-table-column property="c_name" label="商品名称"></el-table-column>
+                <el-table-column property="c_describe" label="商品细节"></el-table-column>
+                <el-table-column property="u_name" label="交易对象名称"></el-table-column>
+                <el-table-column label="进行操作">
+                    <template slot-scope="scope">
+                        <!-- 传入商品id -->
+                        <el-button type="success" @click="">
+                            确认收货并评论</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-dialog>
+
+
+        <!-- 查看我的发布商品对话框 -->
+        <el-dialog title="我的发布" :visible.sync="dialogMyCommodityVisible">
+            <el-table :data="user_commodities_list">
+                <el-table-column property="comName" label="商品名称" width="100"></el-table-column>
+                <el-table-column property="comPrice" label="商品价格" width="100"></el-table-column>
+                <el-table-column property="comReleaseTime" label="商品发布时间"></el-table-column>
+                <el-table-column label="进行操作">
+                    <template slot-scope="scope">
+                        <!-- 传入商品id -->
+                        <el-button type="success" @click="check_users_com_status(scope.row.comID)">
+                            {{scope.row.comStatus | jugementStatus}}</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-dialog>
+
+        <!-- 相关订单信息对话框 -->
+        <el-dialog title="收货地址" :visible.sync="dialogDealInfoVisible">
+            <el-table :data="dealinfo">
+                <!-- <el-table-column label="交易地点" width="180">
+                    <template slot-scope="scope">
+                        <span>{{scope.row.dealLocation}}</span>
+                    </template>
+                </el-table-column> -->
+                <el-table-column property="dealLocation" label="交易地点" width="100"></el-table-column>
+
+                <el-table-column property="username" label="买家姓名" width="100"></el-table-column>
+                <el-table-column property="dealBuyerTelephone" label="买家电话" width="100"></el-table-column>
+                <el-table-column property="dealChangeTime" label="交易时间" width="100"></el-table-column>
+
+            </el-table>
+        </el-dialog>
 
         <!-- 添加商品对话框 -->
         <el-dialog title="发布商品" :visible.sync="dialogFormVisible">
@@ -89,10 +144,10 @@
         <!-- 下订单对话框 -->
         <!-- 需要输入正确交易时间和地点 -->
         <el-dialog title="选择订单交易详细信息" :visible.sync="changeFromVisible">
-            <el-form :model="dealForm" label-width="100px" class="demo-ruleForm" :rules="dealRules"
-                ref="dealForm">
-                <el-form-item label="购买人联系电话" >
-                    <el-input v-model.number="dealForm.dealBuyerTelephone" prop="dealBuyerTelephone" type="number"></el-input>
+            <el-form :model="dealForm" label-width="100px" class="demo-ruleForm" :rules="dealRules" ref="dealForm">
+                <el-form-item label="购买人联系电话">
+                    <el-input v-model.number="dealForm.dealBuyerTelephone" prop="dealBuyerTelephone" type="number">
+                    </el-input>
                 </el-form-item>
                 <el-form-item label="商品交易地点" prop="dealLocation">
                     <el-input v-model="dealForm.dealLocation"></el-input>
@@ -126,8 +181,7 @@
                     <i class="el-icon-setting" style="margin-right: 15px"></i>
                     <el-dropdown-menu slot="dropdown">
                         <el-dropdown-item>查看</el-dropdown-item>
-                        <el-dropdown-item>新增</el-dropdown-item>
-                        <el-dropdown-item>删除</el-dropdown-item>
+                        <el-dropdown-item>登出</el-dropdown-item>
                     </el-dropdown-menu>
                 </el-dropdown>
                 <span>{{msg.username}}</span>
@@ -188,13 +242,22 @@
                 //下订单对话框是否可见
                 changeFromVisible: false,
 
+                //用户发布商品对话框是否可见
+                dialogMyCommodityVisible: false,
+
+                //用户已经购买商品对话框是哦夫可见
+                dialogMyBoughtVisible: false,
+
+                //订单相关信息对话框是否可见
+                dialogDealInfoVisible: false,
+
                 tableData: Array(20).fill(item),
 
                 //路由传递数据
                 msg: this.$route.query.data,
 
                 //购买订单时选中商品id
-                onClickCommodity:'',
+                onClickCommodity: '',
 
                 item: {
                     date: '2016-05-02',
@@ -206,9 +269,10 @@
                 //     name: "fadfa",
                 //     price: 12.32
                 // }, ],
-                
+
                 //商品列表
                 //渲染table用
+                //所有状态为released的商品
                 commodities: [{
                     id: "",
                     name: "",
@@ -219,6 +283,93 @@
 
                 }],
 
+
+                dealinfo: [{}],
+
+                //用户查询的商品列表，跟用户相关
+                user_commodities_list: [{
+                    comID: "",
+                    comPrice: "",
+                    comName: "",
+                    comDescribe: "",
+                    comReleaseTime: "",
+                    comStatus: "",
+                    user: ""
+
+                }],
+
+                //用户订单查看列表
+                user_deal_list: [{
+                    "d_location": "",
+                    "d_time": "",
+                    "d_tele": "",
+                    "c_prive": "",
+                    "c_name": "",
+                    "c_describe": "",
+                    "u_name": ""
+                }],
+                // user_deal_list: [{
+
+                //     dealID: "",
+                //     dealLocation: "",
+                //     dealChangeTime: "",
+                //     dealBuyerTelephone: "",
+                //     commodityEntity: {
+                //         comID: "",
+                //         comPrice: "",
+                //         comName: "",
+                //         comDescribe: "",
+                //         comReleaseTime: "",
+                //         comStatus: traded,
+                //         user: {
+                //             id: "",
+                //             username: "",
+                //             password: "",
+                //             telephonenum: ""
+                //         }
+                //     },
+                //     userEntity: {
+                //         id: "",
+                //         username: "",
+                //         password: "",
+                //         telephonenum: ""
+                //     }
+
+                // }],
+
+                //用户点击卖出商品的订单信息
+                user_trade_com_info: {
+                    // dealID: "",
+                    // dealLocation: "",
+                    // dealChangeTime: "",
+                    // dealBuyerTelephone: "",
+                    // commodityEntity: {
+                    //     comID: "",
+                    //     comPrice: "",
+                    //     comName: "",
+                    //     comDescribe: "",
+                    //     comReleaseTime: "",
+                    //     comStatus: "",
+                    //     user: {
+                    //         id: "",
+                    //         username: "",
+                    //         password: "",
+                    //         telephonenum: ""
+                    //     }
+                    // },
+                    // userEntity: {
+                    //     id: "",
+                    //     username: "",
+                    //     password: "",
+                    //     telephonenum: ""
+                    // }
+
+                    username: "",
+                    dealLocation: "",
+                    dealChangeTime: "",
+                    dealBuyerTelephone: ""
+
+                },
 
 
                 //创建商品对话框的检验规则
@@ -275,7 +426,7 @@
                             message: '手机号码必须为数字值'
                         },
 
-                        
+
                     ],
                     dealChangeTime: [{
                         // type: 'date',
@@ -310,11 +461,11 @@
                 //订单元素表单
                 dealForm: {
                     //地点
-                    dealLocation:"",
+                    dealLocation: "",
                     //交易时间
-                    dealChangeTime:"",
+                    dealChangeTime: "",
                     //联系人电话
-                    dealBuyerTelephone:""
+                    dealBuyerTelephone: ""
 
                 },
 
@@ -357,6 +508,7 @@
             alert("欢迎您:" + this.msg.username)
             console.log(this.msg)
             var _this = this
+            //发送http请求，查找状态为released的商品
             axios.get('http://localhost:9090/commodity/findallcommodity').then(function (response) {
                 console.log(response)
                 _this.commodities = response.data
@@ -378,7 +530,7 @@
             //打开交易商品对话框
             buyCommodityDiaOpen(id) {
 
-                
+
                 this.onClickCommodity = id;
                 console.log("选中id信息")
                 console.log(this.onClickCommodity)
@@ -396,21 +548,94 @@
                 }
             },
 
+            // //用户查看自己买了什么功能
+            view_my_bought() {
+                //跨域请求
+                axios({
+                    //发送http请求
+                    method: 'post',
+                    url: 'http://localhost:9090/user/getdealbyuser',
+                    crossDomain: true,
+                    data: JSON.stringify(this.msg),
+
+
+                    headers: {
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }
+                }).then(response => {
+                    //数据放入列表
+                    this.user_deal_list = response.data
+                })
+                this.dialogMyBoughtVisible = true
+            },
+
+            //用户查看自己已发布商品的功能，打开嵌套表格的对话框
+            view_my_commodity() {
+                //跨域请求
+                axios({
+                    //发送http请求
+                    method: 'post',
+                    url: 'http://localhost:9090/user/getcombyuser',
+                    crossDomain: true,
+                    data: JSON.stringify(this.msg),
+
+
+                    headers: {
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }
+                }).then(response => {
+                    //数据放入列表
+                    this.user_commodities_list = response.data
+                })
+                this.dialogMyCommodityVisible = true;
+            },
+
+            //根据商品id返回订单信息
+            check_users_com_status(id) {
+                var sendData = {}
+                sendData.comID = id
+                var self = this
+                //跨域请求
+                axios({
+                    //发送http请求
+                    method: 'post',
+                    url: 'http://localhost:9090/commodity/finddeal',
+                    crossDomain: true,
+                    data: JSON.stringify(sendData)
+
+                        ,
+                    headers: {
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }
+                }).then(response => {
+                    self.user_trade_com_info.dealLocation = response.data.dealLocation
+                    self.user_trade_com_info.dealBuyerTelephone = response.data.dealBuyerTelephone
+                    self.user_trade_com_info.dealChangeTime = response.data.dealChangeTime
+                    self.user_trade_com_info.username = response.data.userEntity.username
+
+                    console.log(this.objToArr(this.user_trade_com_info))
+                    //this.dealinfo = this.objToArr(this.user_trade_com_info)
+                    this.dealinfo.push(this.user_trade_com_info)
+                    self.dialogDealInfoVisible = true
+
+                })
+            },
+
             //购买商品方法
             //传参失效待解决，换了中方法
-            buyCommodity(form){
+            buyCommodity(form) {
                 //console.log(this.dealForm)
                 //console.log(dealform)
                 this.$refs[form].validate((valid) => {
-                    if(valid){//验证通过
-                        
+                    if (valid) { //验证通过
+
                         let com = {}
                         com.comID = this.onClickCommodity
 
 
                         //此处以后会更改，发送多个json浪费资源，用requestparam代替
                         var sendDeal = JSON.stringify(this.dealForm)
-                        var sendUser = JSON.stringify(this.msg) 
+                        var sendUser = JSON.stringify(this.msg)
                         var sendCom = JSON.stringify(com)
 
                         //跨域请求
@@ -424,7 +649,7 @@
                             data: {
                                 "com": sendCom,
                                 "user": sendUser,
-                                "deal":sendDeal
+                                "deal": sendDeal
                             }
 
                             ,
@@ -432,18 +657,16 @@
                                 'Content-Type': 'application/json;charset=UTF-8'
                             }
                         }).then(response => {
-                           
-                                var length = Object.keys(response.data)
-                                if(length == 0){
-                                    alert("订单失效")
-                                }
-                                else{
-                                    alert("购买成功")
-                                }
+
+                            var length = Object.keys(response.data)
+                            if (length == 0) {
+                                alert("订单失效")
+                            } else {
+                                alert("购买成功")
+                            }
                         })
 
-                    }
-                    else("请注意对话提示框")
+                    } else("请注意对话提示框")
                 })
             },
 
@@ -560,10 +783,34 @@
 
             },
 
+            objToArr(obj) {
+                var arr = []
+                for (let i in obj) {
+                    let o = {};
+                    o[i] = obj[i];
+                    arr.push(o)
+
+                }
+                return arr;
+            },
+
             //重置表格
             resetForm(formName) {
                 this.$refs[formName].resetFields();
             }
+        },
+        filters: {
+            //根据商品状态返回信息
+            jugementStatus: function (status) {
+                if (status == 'released') {
+                    return '尚未被购买'
+                }
+                if (status == 'traded') {
+                    return '订单交易中'
+                }
+            }
         }
+
+
     };
 </script>
