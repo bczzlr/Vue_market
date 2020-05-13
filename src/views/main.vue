@@ -2,7 +2,7 @@
     <!-- 想写子路由但是时间有点紧就直接一个vue了 -->
     <el-container style="height: 500px; border: 1px solid #eee">
         <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
-            <el-menu :default-openeds="['1', '3']">
+            <el-menu>
                 <el-submenu index="1">
                     <template slot="title"><i class="el-icon-message"></i>商品总览</template>
                     <!-- <el-menu-item-group>
@@ -30,15 +30,15 @@
 
                         <el-menu-item index="2-2" @click="view_my_bought">查看我的购买</el-menu-item>
 
-                        <el-menu-item index="2-2" @click="">查看我的评价</el-menu-item>
+                        <!-- <el-menu-item index="2-2" @click="">查看我的评价</el-menu-item> -->
                     </el-menu-item-group>
 
                 </el-submenu>
                 <el-submenu index="3">
-                    <template slot="title"><i class="el-icon-setting"></i>导航三</template>
+                    <template slot="title"><i class="el-icon-setting"></i>历史交易</template>
                     <el-menu-item-group>
                         <template slot="title">分组一</template>
-                        <el-menu-item index="3-1">选项1</el-menu-item>
+                        <el-menu-item index="3-1" @click="view_my_history_bought">查看我的历史购买</el-menu-item>
                         <el-menu-item index="3-2">选项2</el-menu-item>
                     </el-menu-item-group>
                     <el-menu-item-group title="分组2">
@@ -51,6 +51,31 @@
                 </el-submenu>
             </el-menu>
         </el-aside>
+
+        <!-- 查看评价对话框 -->
+        <el-dialog title="评价历史" :visible.sync="dialogHistoryBoughtTableVisible">
+            <el-table :data="user_eval_list">
+                <el-table-column property="c_name" label="商品名称"></el-table-column>
+                <el-table-column property="c_price" label="商品金额"></el-table-column>
+                <el-table-column property="c_name" label="对方姓名"></el-table-column>
+                <el-table-column label="评价" width="200">
+                    <template slot-scope="scope">
+                        <!-- 传入商品id
+                        <el-button type="success" @click="openEvalDialog(scope.row.c_id,scope.row.d_id)">
+                            确认收货并评论</el-button> -->
+                        <el-rate v-model="scope.row.e_starts" :colors="colors">
+                        </el-rate>
+                        <!-- <el-rate v-model="scope.row.e_starts"  show-score text-color="#ff9900" score-template="{scope.row.e_starts}">
+                        </el-rate> -->
+                        
+                    </template>
+                </el-table-column>
+                
+                <el-table-column property="d_location" label="地址"></el-table-column>
+                <el-table-column property="e_comment" label="评论"></el-table-column>
+                <el-table-column property="d_time" label="交易时间"></el-table-column>
+            </el-table>
+        </el-dialog>
 
         <!-- 查看我的购买对话框 -->
         <el-dialog title="我的购买" :visible.sync="dialogMyBoughtVisible">
@@ -65,7 +90,7 @@
                 <el-table-column label="进行操作">
                     <template slot-scope="scope">
                         <!-- 传入商品id -->
-                        <el-button type="success" @click="">
+                        <el-button type="success" @click="openEvalDialog(scope.row.c_id,scope.row.d_id)">
                             确认收货并评论</el-button>
                     </template>
                 </el-table-column>
@@ -104,6 +129,28 @@
                 <el-table-column property="dealChangeTime" label="交易时间" width="100"></el-table-column>
 
             </el-table>
+        </el-dialog>
+
+        <!-- 评价对话框 -->
+        <el-dialog title="进行评价" :visible.sync="dialogEvalFormVisible">
+            <el-form :model="evalForm" :rules="evalRule" ref="evalForm">
+                <el-form-item label="评价" :label-width="formLabelWidth" prop="evalComment">
+                    <el-input v-model="evalForm.evalComment" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="订单星级" :label-width="formLabelWidth">
+                    <!-- <el-select v-model="form.region" placeholder="请选择活动区域">
+                        <el-option label="区域一" value="shanghai"></el-option>
+                        <el-option label="区域二" value="beijing"></el-option>
+                    </el-select> -->
+                    <el-rate v-model="evalForm.evalStars" show-text prop="evalStars">
+                    </el-rate>
+                </el-form-item>
+
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="resetForm('evalForm')">重置</el-button>
+                <el-button type="primary" @click="evaling">确 定</el-button>
+            </div>
         </el-dialog>
 
         <!-- 添加商品对话框 -->
@@ -245,8 +292,14 @@
                 //用户发布商品对话框是否可见
                 dialogMyCommodityVisible: false,
 
+                //评价对话框是否可见
+                dialogEvalFormVisible: false,
+
                 //用户已经购买商品对话框是哦夫可见
                 dialogMyBoughtVisible: false,
+
+                //用户购买历史对话框
+                dialogHistoryBoughtTableVisible: false,
 
                 //订单相关信息对话框是否可见
                 dialogDealInfoVisible: false,
@@ -258,6 +311,12 @@
 
                 //购买订单时选中商品id
                 onClickCommodity: '',
+
+                //做出评价的时候选中的商品id
+                onClickEvaluationComID: '',
+
+                //做出评价的时候选中商品对应订单id
+                onClickDealID: '',
 
                 item: {
                     date: '2016-05-02',
@@ -283,7 +342,7 @@
 
                 }],
 
-
+                //订单详细信息
                 dealinfo: [{}],
 
                 //用户查询的商品列表，跟用户相关
@@ -300,14 +359,30 @@
 
                 //用户订单查看列表
                 user_deal_list: [{
-                    "d_location": "",
-                    "d_time": "",
-                    "d_tele": "",
-                    "c_prive": "",
-                    "c_name": "",
-                    "c_describe": "",
-                    "u_name": ""
+                    d_location: "",
+                    d_time: "",
+                    d_tele: "",
+                    c_prive: "",
+                    c_name: "",
+                    c_describe: "",
+                    u_name: "",
+                    c_status: "",
+                    c_id: "",
+                    d_id: "",
+                    // e_id
                 }],
+
+                //用户评价查看表
+                user_eval_list: [{
+                    e_comment: "",
+                    e_starts: null,
+                    c_name: "",
+                    c_price: "",
+                    d_location: "",
+                    d_time: "",
+                    u_name: "",
+                }],
+
                 // user_deal_list: [{
 
                 //     dealID: "",
@@ -449,6 +524,27 @@
 
                 },
 
+                //评论订单审核规则
+                evalRule: {
+                    evalComment: [{
+                            required: true,
+                            message: "请输入正确的评价",
+                            trigger: 'blur'
+                        },
+                        {
+                            min: 1,
+                            max: 30,
+                            message: '长度在 1 到 30 个字符',
+                            trigger: 'blur'
+                        }
+                    ],
+                    evalStars: [{
+                        required: true,
+                        message: "请打分",
+                        trigger: 'blur'
+                    }]
+                },
+
                 //添加商品表单
                 commodityForm: {
                     comName: "",
@@ -456,6 +552,11 @@
                     comPrice: "",
                     comReleaseTime: '',
 
+                },
+
+                evalForm: {
+                    evalComment: "",
+                    evalStars: "",
                 },
 
                 //订单元素表单
@@ -722,8 +823,8 @@
                         })
 
                         //刷新
-                        location.reload();
-                        this.dialogFormVisible = false
+                        // location.reload();
+                        // this.dialogFormVisible = false
 
                     } else {
                         alert("请注意输入")
@@ -783,6 +884,45 @@
 
             },
 
+            //打开评价对话框
+            openEvalDialog(c_id, d_id) {
+                alert(d_id)
+                this.dialogEvalFormVisible = true
+                this.onClickEvaluationComID = c_id
+                this.onClickDealID = d_id
+
+            },
+
+            //提交评价
+            evaling() {
+                var comobj = {}
+                comobj.comID = this.onClickEvaluationComID
+
+                var dealobj = {}
+                dealobj.dealID = this.onClickDealID
+                //alert(this.evalForm.evalStars)
+                axios({
+                    //发送http请求
+                    method: 'post',
+                    url: 'http://localhost:9090/eval/makeeval',
+                    crossDomain: true,
+                    //以map形式发送
+                    //以map形式发送数据太浪费资源，以后改成一个商品json在请求体和一个userid在url中
+                    data: {
+                        "eval": JSON.stringify(this.evalForm),
+                        "com": JSON.stringify(comobj),
+                        "user": JSON.stringify(this.msg),
+                        "deal": JSON.stringify(dealobj)
+
+                    },
+                    headers: {
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }
+                }).then(response => {
+
+                })
+            },
+
             objToArr(obj) {
                 var arr = []
                 for (let i in obj) {
@@ -792,6 +932,25 @@
 
                 }
                 return arr;
+            },
+
+            //查看购买记录
+            view_my_history_bought() {
+                axios({
+                    //发送http请求
+                    method: 'post',
+                    url: 'http://localhost:9090/user/getevalbyuser',
+                    crossDomain: true,
+                    //以map形式发送
+                    //以map形式发送数据太浪费资源，以后改成一个商品json在请求体和一个userid在url中
+                    data: JSON.stringify(this.msg),
+                    headers: {
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }
+                }).then(response => {
+                    this.user_eval_list = response.data
+                })
+                this.dialogHistoryBoughtTableVisible = true
             },
 
             //重置表格
