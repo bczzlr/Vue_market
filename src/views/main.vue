@@ -67,10 +67,10 @@
                         </el-rate>
                         <!-- <el-rate v-model="scope.row.e_starts"  show-score text-color="#ff9900" score-template="{scope.row.e_starts}">
                         </el-rate> -->
-                        
+
                     </template>
                 </el-table-column>
-                
+
                 <el-table-column property="d_location" label="地址"></el-table-column>
                 <el-table-column property="e_comment" label="评论"></el-table-column>
                 <el-table-column property="d_time" label="交易时间"></el-table-column>
@@ -605,11 +605,25 @@
             }
         },
         created() {
+            // this.msg.username = 
+            // this.msg.password = 
+            // this.msg.telephonenum = this.$cookie.get('telephonenum')
+            var id = {}
+            id.username = this.$cookie.get('username')
+            id.password = this.$cookie.get('password')
+            id.telephonenum = this.$cookie.get('telephonenum')
+            this.msg = id
             //alert(this.msg)
             alert("欢迎您:" + this.msg.username)
+            //alert(this.$cookie.get('username'))
             console.log(this.msg)
             var _this = this
-            //发送http请求，查找状态为released的商品
+            //alert(this.getCookie.getTime)
+            //发送http请求， 查找状态为released的商品
+            //if(typeof(this.msg) == undefined){
+
+            //}
+
             axios.get('http://localhost:9090/commodity/findallcommodity').then(function (response) {
                 console.log(response)
                 _this.commodities = response.data
@@ -617,6 +631,22 @@
             })
         },
         methods: {
+            //读取cookie
+            getCookie: function () {
+                if (document.cookie.length > 0) {
+                    var arr = document.cookie.split("; "); //这里显示的格式需要切割一下自己可输出看下
+                    for (var i = 0; i < arr.length; i++) {
+                        var arr2 = arr[i].split("="); //再次切割
+                        //判断查找相对应的值
+                        if (arr2[0] == "tel") {
+                            this.tel = arr2[1]; //保存到保存数据的地方
+                        } else if (arr2[0] == "pwd") {
+                            this.pwd = arr2[1];
+                        }
+                    }
+                }
+            },
+
             changeAnthor() {
                 alert("hello")
                 this.tableData = null
@@ -823,7 +853,7 @@
                         })
 
                         //刷新
-                        // location.reload();
+                        location.reload();
                         // this.dialogFormVisible = false
 
                     } else {

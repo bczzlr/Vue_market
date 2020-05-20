@@ -133,11 +133,21 @@
       },
 
       //重新加载方法
-      reload () {
-      this.isRouterAlive = false
-      this.$nextTick(function () {
-        this.isRouterAlive = true
-      })
+      reload() {
+        this.isRouterAlive = false
+        this.$nextTick(function () {
+          this.isRouterAlive = true
+        })
+      },
+
+      setCookie(c_phone, c_pwd, exdays) {
+        var exdate = new Date(); //获取时间
+        exdate.setTime(exdate.getTime() + 24 * 60 * 60 * 1000 * exdays); //保存的天数
+        //字符串拼接cookie
+        window.document.cookie =
+          "tel" + "=" + c_phone + ";path=/;expires=" + exdate.toGMTString();
+        window.document.cookie =
+          "pwd" + "=" + c_pwd + ";path=/;expires=" + exdate.toGMTString();
       },
 
       //用户登录
@@ -175,6 +185,14 @@
           //未出现错误信息
           if (typeof (err_message) == "undefined") {
             alert(response.data.telephonenum)
+            //this.$store.commit('$_setStorage',{user: response.data.username})
+            //this.$store.commit('$_setStorage', {user: this.loginForm.username})
+            //this.$store.commit("handleUserName", res.data.username);
+            //this.$store.commit("isLogin", true);
+            //this.setCookie(response.data.username, response.data.password, 7);
+            this.$cookie.set('username',response.data.username);
+            this.$cookie.set('password',response.data.password)
+            this.$cookie.set('telephonenum',response.data.telephonenum)
             this.$router.push({
               path: "/main",
               query: {
