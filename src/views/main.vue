@@ -612,11 +612,19 @@
             id.username = this.$cookie.get('username')
             id.password = this.$cookie.get('password')
             id.telephonenum = this.$cookie.get('telephonenum')
-            this.msg = id
+            //this.msg = id
             //alert(this.msg)
+            
+            //if (this.msg === undefined) {
+                this.msg = JSON.parse(window.sessionStorage.getItem('userobj'))
+                //window.sessionStorage.setItem("userobj", JSON.stringify(msg))
+            //}
+            // else{
+            //     window.sessionStorage.setItem('userobj', JSON.stringify(this.msg))
+            // }
             alert("欢迎您:" + this.msg.username)
             //alert(this.$cookie.get('username'))
-            console.log(this.msg)
+            //console.log(this.msg)
             var _this = this
             //alert(this.getCookie.getTime)
             //发送http请求， 查找状态为released的商品
@@ -798,6 +806,7 @@
                         })
 
                     } else("请注意对话提示框")
+                    location.reload()
                 })
             },
 
@@ -951,6 +960,7 @@
                 }).then(response => {
 
                 })
+                location.reload()
             },
 
             objToArr(obj) {

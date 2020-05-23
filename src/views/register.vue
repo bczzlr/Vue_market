@@ -126,7 +126,7 @@
                                 alert("注册成功，您的用户id为："+ res_data.id)
                             
                                 this.$router.push({
-                                    path: "/success",
+                                    path: "/",
                                     query: {
                                         data: res_data
                                     }

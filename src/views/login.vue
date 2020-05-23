@@ -109,6 +109,7 @@
           // if (typeof (err_message) == "undefined")
           else {
             alert("欢迎管理员")
+            window.sessionStorage.setItem('adminobj',JSON.stringify(response.data))
             this.$router.push({
               path: "/admin",
               query: {
@@ -193,6 +194,7 @@
             this.$cookie.set('username',response.data.username);
             this.$cookie.set('password',response.data.password)
             this.$cookie.set('telephonenum',response.data.telephonenum)
+            window.sessionStorage.setItem('userobj',JSON.stringify(response.data))
             this.$router.push({
               path: "/main",
               query: {

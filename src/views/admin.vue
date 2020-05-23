@@ -111,6 +111,8 @@
         },
         created() {
             //alert(this.msg)
+            
+            this.msg = JSON.parse(window.sessionStorage.getItem('adminobj'))
             alert("欢迎您:" + this.msg.username)
             console.log(this.msg)
             var _this = this
